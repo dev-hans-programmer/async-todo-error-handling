@@ -3,11 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.todo import router as todo_router
+from app.config_settings.settings import settings
 from app.db.database import create_tables, engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print(settings)
     await create_tables()
 
     yield

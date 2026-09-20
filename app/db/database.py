@@ -1,13 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
+from app.config_settings.settings import settings
+
 # <driver>://username:password@<host>:port/<db_name>
-DATABASE_URL = "postgresql+asyncpg://jobradar:jobradar@localhost:5432/todo"
 
 # environment multipel
 # How to manage different environments: dev, qa, prod
 
-engine = create_async_engine(url=DATABASE_URL)
+engine = create_async_engine(url=settings.DATABASE_URL)
 
 Session = async_sessionmaker(bind=engine, class_=AsyncSession)
 

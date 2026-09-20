@@ -1,15 +1,13 @@
-from fastapi import APIRouter, Depends
-from app.db.database import get_db
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Annotated
+from fastapi import APIRouter
 
-from sqlalchemy import select
-from app.models.todo import Todo
+from app.dependencies.todo_dependency import TodoServiceDependency
+from app.schema.todo_schema import TodoCreate, TodoUpdate
 
 router = APIRouter(prefix='/todos')
 
-from pydantic import BaseModel
+# 1. We have broken down our codebase into layers
+# 2. Every layer is independently testable
 
 
 
@@ -23,40 +21,38 @@ from pydantic import BaseModel
 
 # We can annotated to use the desired type
 
+"""
+Currently this file is handling too many things:
+1. HTTP requests
+2. It's doing any kind of business logic
+3. It's interacting with the db(persistence logic)
 
-MyDbSession = Annotated[AsyncSession, Depends(get_db)]
+In order to solve this, we can introduce sth called repository pattern.
+In this pattern, we break down the entire application into majorly 3 layers
+1. API - Handling api requests
+2. Service -> We handle all the business logic
+3. Repository -> Here, we only care about of persisting or retriving data from any source(db, filesystem source, external api as a source)
 
-
-class TodoCreate(BaseModel):
-    name: str
-    description: str | None = None
-    is_completed: bool
-
+"""
 
 @router.get('/')
-async def get_todos(session: MyDbSession):
+async def get_todos(service:TodoServiceDependency ):
     # fetch all the todos:
 
-    print(f"SESSION {session}")
-    result = await session.execute(select(Todo))
-    return list(result.scalars().all())
+    todos = await service.fetch_all_todos()
+    return {"todos": todos}
 
 @router.post('/')
-async def create_todo(todo_in: TodoCreate, session: MyDbSession):
-    print(f"TOOD CREATE {todo_in}")
-
-    # create a todo instance and provide to this function
-    created_todo = Todo(**todo_in.model_dump())
-
-    print(f"CREATED TODO {created_todo}")
-    session.add(created_todo)
-
-    await session.commit()
-
-    # we can refresh the newly created data
-    await session.refresh(created_todo)
+async def create_todo(todo_in: TodoCreate, service: TodoServiceDependency):
+    created_todo = await service.create_todo(todo_in)
+    return {"message":f"Todo has been created with id {created_todo.id}"}
 
 
-    return {"message":"Todo has been created"}
+@router.patch('/{todo_id}')
+async def update_todo(todo_id: int, todo_in: TodoUpdate,service: TodoServiceDependency):
+    return await service.update_todo(todo_id, todo_in)
+
+# Fetch all todos
+# Delete all todos
 
 # CREATE, GET, PATCH, DELETE

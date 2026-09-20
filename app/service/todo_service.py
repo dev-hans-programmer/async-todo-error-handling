@@ -1,0 +1,28 @@
+from app.repo.todo_repo import TodoRepo
+from app.schema.todo_schema import TodoCreate, TodoUpdate
+from app.models.todo import Todo
+
+
+
+class TodoService:
+    def __init__(self, repo: TodoRepo):
+        self.todo_repo = repo
+
+    async def fetch_all_todos(self):
+        return await self.todo_repo.get_all()
+
+    async def create_todo(self, todo_in: TodoCreate):
+        actual_todo_obj = Todo(**todo_in.model_dump())
+        created_todo = await self.todo_repo.create(actual_todo_obj)
+        return created_todo
+
+    async def update_todo(self, todo_id: int, todo_in:TodoUpdate ):
+        # find the todo
+        desired_todo = await self.todo_repo.get_by_id(todo_id)
+
+
+        changes = todo_in.model_dump(exclude_unset=True)
+
+        return await self.todo_repo.update(desired_todo, changes)
+
+        
