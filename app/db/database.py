@@ -25,6 +25,7 @@ async def get_db():
 async def create_tables():
 
     from app.models.todo import Todo
+    from app.models.user import User
 
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
