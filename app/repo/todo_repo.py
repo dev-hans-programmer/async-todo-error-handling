@@ -11,8 +11,8 @@ class TodoRepo:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_all(self) -> list[Todo]:
-        result = await self.db.execute(select(Todo))
+    async def get_all(self, user_id: int) -> list[Todo]:
+        result = await self.db.execute(select(Todo).where(Todo.user_id == user_id))
         return list(result.scalars().all())
 
     async def create(self, todo: Todo):
