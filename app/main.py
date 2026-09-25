@@ -11,7 +11,7 @@ from app.db.database import create_tables, engine
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(settings)
-    await create_tables()
+    # await create_tables()
 
     yield
     # close db engine, or any resource cleanup

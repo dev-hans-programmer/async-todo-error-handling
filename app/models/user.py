@@ -18,3 +18,4 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(500), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now() )
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)

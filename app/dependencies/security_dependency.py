@@ -3,6 +3,7 @@
 # We will have to see whether the token is valid, if valid extract the claims
 # We will also have to check whether the user actually exists in our system
 
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status
@@ -37,13 +38,20 @@ async def get_current_user(credentials:Annotated[HTTPAuthorizationCredentials, D
     
     user = await UserRepository(db).get_by_id(int(user_id))
 
-    if user is None and user:
+    if user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
     # assignment 2: 
     # We can have more checks
     # You can have a flag in your user model i.e is_active
     # password change: 
+    password_changed_at = user.password_changed_at
+
+    if password_changed_at is not None:
+        token_issued_at = datetime.fromtimestamp(claims['iat'],tz=UTC)
+
+        if token_issued_at <= password_changed_at:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED,detail="Not authenticated:password changed")
 
     # JWKS URI
     # OIDC client

@@ -41,3 +41,6 @@ class UserService:
 
         return None
 
+    async def has_changed_password():
+        pass
+
