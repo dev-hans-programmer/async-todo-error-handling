@@ -1,18 +1,17 @@
+from app.models.todo import Todo
 from app.repo.todo_repo import TodoRepo
 from app.schema.todo_schema import TodoCreate, TodoUpdate
-from app.models.todo import Todo
-
 
 
 class TodoService:
     def __init__(self, repo: TodoRepo):
         self.todo_repo = repo
 
-    async def fetch_all_todos(self):
-        return await self.todo_repo.get_all()
+    async def fetch_all_todos(self, user_id: int):
+        return await self.todo_repo.get_all(user_id)
 
-    async def create_todo(self, todo_in: TodoCreate):
-        actual_todo_obj = Todo(**todo_in.model_dump())
+    async def create_todo(self, todo_in: TodoCreate, user_id: int):
+        actual_todo_obj = Todo(**todo_in.model_dump(), user_id=user_id)
         created_todo = await self.todo_repo.create(actual_todo_obj)
         return created_todo
 

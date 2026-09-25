@@ -1,6 +1,7 @@
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
+from app.dependencies.security_dependency import CurrentUser
 from app.dependencies.todo_dependency import TodoServiceDependency
 from app.schema.todo_schema import TodoCreate, TodoUpdate
 
@@ -36,16 +37,21 @@ In this pattern, we break down the entire application into majorly 3 layers
 """
 
 @router.get('/')
-async def get_todos(service:TodoServiceDependency ):
+async def get_todos(service:TodoServiceDependency, current_user: CurrentUser ):
     # fetch all the todos:
+    user_id = current_user.id
 
-    todos = await service.fetch_all_todos()
+    todos = await service.fetch_all_todos(user_id)
     return {"todos": todos}
 
 @router.post('/')
-async def create_todo(todo_in: TodoCreate, service: TodoServiceDependency):
-    created_todo = await service.create_todo(todo_in)
-    return {"message":f"Todo has been created with id {created_todo.id}"}
+async def create_todo(todo_in: TodoCreate, service: TodoServiceDependency, current_user: CurrentUser ):
+    user_id = current_user.id
+    try:
+        created_todo = await service.create_todo(todo_in, user_id)
+        return {"message":f"Todo has been created with id {created_todo.id}"}
+    except Exception as e:
+        raise HTTPException(400, detail=str(e))
 
 
 @router.patch('/{todo_id}')
