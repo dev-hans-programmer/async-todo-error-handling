@@ -3,7 +3,9 @@ from fastapi import APIRouter
 
 from app.dependencies.security_dependency import CurrentUser
 from app.dependencies.todo_dependency import TodoServiceDependency
-from app.schema.todo_schema import TodoCreate, TodoUpdate
+from app.schema.common_schema import SuccessResponse
+from app.schema.todo_schema import TodoCreate, TodoResponse, TodoUpdate
+from app.utils.responses import success_response
 
 router = APIRouter(prefix='/todos')
 
@@ -36,13 +38,13 @@ In this pattern, we break down the entire application into majorly 3 layers
 
 """
 
-@router.get('/')
+@router.get('/', response_model=SuccessResponse[list[TodoResponse]])
 async def get_todos(service:TodoServiceDependency, current_user: CurrentUser ):
     # fetch all the todos:
     user_id = current_user.id
 
     todos = await service.fetch_all_todos(user_id)
-    return {"todos": todos}
+    return success_response(data=todos, message="Todos fetched successfully")
 
 @router.post('/')
 async def create_todo(todo_in: TodoCreate, service: TodoServiceDependency, current_user: CurrentUser ):

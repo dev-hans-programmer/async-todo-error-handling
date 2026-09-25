@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -10,6 +12,14 @@ class TodoUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
     is_completed: bool | None = None
+
+class TodoResponse(BaseModel):
+    id: int
+    name: str
+    description: str
+    is_completed: bool
+    created_at: datetime
+    updated_at: datetime
 
 
 

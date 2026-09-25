@@ -1,10 +1,12 @@
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.dependencies.user_dependency import UserServiceDependency
-from app.schema.user_schema import Credentials, UserCreate, UserResponse
-from app.security import create_access_token
 from app.dependencies.security_dependency import CurrentUser
+from app.dependencies.user_dependency import UserServiceDependency
+from app.schema.common_schema import SuccessResponse
+from app.schema.user_schema import Credentials, LoginResponse, UserCreate, UserResponse
+from app.security import create_access_token
+from app.utils.responses import success_response
 
 router = APIRouter(prefix='/users')
 
@@ -18,11 +20,12 @@ router = APIRouter(prefix='/users')
 
 
 # register
-@router.post('/register', response_model=UserResponse) # /users/register
+@router.post('/register', response_model=SuccessResponse[UserResponse]) # /users/register
 async def register(user_in: UserCreate, service: UserServiceDependency):
-    return await service.register(user_in)
+    data =  await service.register(user_in)
+    return success_response(data=data, message="User registered")
 
-@router.post('/login')
+@router.post('/login', response_model=SuccessResponse[LoginResponse])
 async def login(credentials:Credentials, service: UserServiceDependency ):
     user = await service.authenticate(credentials.email, credentials.password)
 
@@ -38,7 +41,7 @@ async def login(credentials:Credentials, service: UserServiceDependency ):
 
     token = create_access_token(user.id)
 
-    return {"token": token}
+    return success_response(data=LoginResponse(token=token), message="Token generated")
 
 
 # before you even reach the endpoint, if you have to do some processing or anything
@@ -48,7 +51,7 @@ async def login(credentials:Credentials, service: UserServiceDependency ):
 # assignment 1: Create a middleware which will calculate the total time taken for any request
 
 
-@router.get('/me')
+@router.get('/me', response_model=SuccessResponse[UserResponse])
 async def get_me(current_user: CurrentUser):
-    return {"user":current_user} 
+    return success_response(data=current_user, message="Logged In")
 

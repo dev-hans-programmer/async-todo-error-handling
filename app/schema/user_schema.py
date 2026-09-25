@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
+
+from pydantic import BaseModel, EmailStr
 
 
 class UserCreate(BaseModel):
@@ -12,6 +13,9 @@ class UserResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     email :str
+
+class LoginResponse(BaseModel):
+    token: str
 
 class MeResponse(BaseModel):
     id: int
