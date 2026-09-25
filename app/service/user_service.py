@@ -5,7 +5,7 @@ from app.repo.user_repo import UserRepository
 from app.schema.user_schema import UserCreate
 from app.security import hash_password, verify_password
 
-
+from app.errors.exceptions import UserAlreadyExists
 class UserService:
     def __init__(self, repo: UserRepository):
         self.repo = repo
@@ -16,7 +16,8 @@ class UserService:
         existing = await self.repo.get_by_email(user_in.email)
 
         if existing is not None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail='User already exists')
+            raise UserAlreadyExists()
+
 
         # create it
         user_dict = user_in.model_dump()

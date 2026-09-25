@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from app.dependencies.security_dependency import CurrentUser
 from app.dependencies.todo_dependency import TodoServiceDependency
@@ -47,11 +47,8 @@ async def get_todos(service:TodoServiceDependency, current_user: CurrentUser ):
 @router.post('/')
 async def create_todo(todo_in: TodoCreate, service: TodoServiceDependency, current_user: CurrentUser ):
     user_id = current_user.id
-    try:
-        created_todo = await service.create_todo(todo_in, user_id)
-        return {"message":f"Todo has been created with id {created_todo.id}"}
-    except Exception as e:
-        raise HTTPException(400, detail=str(e))
+    created_todo = await service.create_todo(todo_in, user_id)
+    return {"message":f"Todo has been created with id {created_todo.id}"}
 
 
 @router.patch('/{todo_id}')
