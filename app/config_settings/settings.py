@@ -14,6 +14,7 @@ print(env_file)
 class ConfigSettings(BaseSettings):
     DATABASE_URL: str
     APP_NAME: str
+    JWT_SECRET: str
 
     model_config = SettingsConfigDict(env_file=env_file)
 
