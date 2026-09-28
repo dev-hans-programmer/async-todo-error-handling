@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.todo import Todo
@@ -12,11 +12,19 @@ class TodoRepo:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_all(self, user_id: int, filters: TodoListParams) -> list[Todo]:
-        stmt = select(Todo).where(Todo.user_id == user_id)
+    async def get_all(
+        self, user_id: int, filters: TodoListParams
+    ) -> tuple[list[Todo], int]:
+        conditions = [Todo.user_id == user_id]
 
         if filters.is_completed is not None:
-            stmt = stmt.where(Todo.is_completed == filters.is_completed)
+            conditions.append(Todo.is_completed == filters.is_completed)
+
+        print(f"CONF {conditions}")
+        count_stmt = select(func.count(Todo.id)).select_from(Todo).where(*conditions)
+
+        count_results = await self.db.execute(count_stmt)
+        total = count_results.scalar_one()
 
         sort_columns = {"created_at": Todo.created_at, "name": Todo.name}
 
@@ -29,11 +37,17 @@ class TodoRepo:
         offset = (filters.page - 1) * filters.limit
         limit = filters.limit
 
-        stmt = stmt.order_by(ordering).offset(offset).limit(limit)
+        todos_stmt = (
+            select(Todo)
+            .where(*conditions)
+            .order_by(ordering)
+            .offset(offset)
+            .limit(limit)
+        )
 
-        result = await self.db.execute(stmt)
+        result = await self.db.execute(todos_stmt)
 
-        return list(result.scalars().all())
+        return list(result.scalars().all()), total
 
     async def create(self, todo: Todo):
         self.db.add(todo)

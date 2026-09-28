@@ -47,8 +47,16 @@ async def get_todos(
     # fetch all the todos:
     user_id = current_user.id
 
-    todos = await service.fetch_all_todos(user_id, filters)
-    return success_response(data=todos, message="Todos fetched successfully")
+    todos, total = await service.fetch_all_todos(user_id, filters)
+    total_pages = (total + filters.limit - 1) // filters.limit
+    return success_response(data=todos, message="Todos fetched successfully", meta={
+        "page": filters.page,
+        "limit": filters.limit,
+        "total_items": total,
+        "total_pages": total_pages,
+        "has_next": filters.page < total_pages,
+        "has_previous": filters.page > 1
+    })
 
 
 @router.post("/")
