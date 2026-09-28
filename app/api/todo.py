@@ -47,7 +47,7 @@ async def get_todos(
 ):
     # fetch all the todos:
     user_id = current_user.id
-
+    
     todos, total = await service.fetch_all_todos(user_id, filters)
     total_pages = (total + filters.limit - 1) // filters.limit
     return success_response(data=todos, message="Todos fetched successfully", meta={

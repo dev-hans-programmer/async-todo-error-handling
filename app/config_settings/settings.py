@@ -15,6 +15,7 @@ class ConfigSettings(BaseSettings):
     DATABASE_URL: str
     APP_NAME: str
     JWT_SECRET: str
+    MAILTRAP_TOKEN: str
 
     model_config = SettingsConfigDict(env_file=env_file)
 

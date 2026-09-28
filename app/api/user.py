@@ -1,11 +1,12 @@
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 
 from app.dependencies.security_dependency import CurrentUser
 from app.dependencies.user_dependency import UserServiceDependency
 from app.schema.common_schema import SuccessResponse
 from app.schema.user_schema import Credentials, LoginResponse, UserCreate, UserResponse
 from app.security import create_access_token
+from app.service.email_service import send_todo_export_email
 from app.utils.responses import success_response
 
 router = APIRouter(prefix='/users')
@@ -21,8 +22,9 @@ router = APIRouter(prefix='/users')
 
 # register
 @router.post('/register', response_model=SuccessResponse[UserResponse]) # /users/register
-async def register(user_in: UserCreate, service: UserServiceDependency):
+async def register(user_in: UserCreate, service: UserServiceDependency, background_tasks: BackgroundTasks):
     data =  await service.register(user_in)
+    background_tasks.add_task(send_todo_export_email, recipient=user_in.email)
     return success_response(data=data, message="User registered")
 
 @router.post('/login', response_model=SuccessResponse[LoginResponse])
