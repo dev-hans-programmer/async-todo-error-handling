@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Query
 from typing import Annotated
+
+from fastapi import APIRouter, Query
 
 from app.dependencies.security_dependency import CurrentUser
 from app.dependencies.todo_dependency import TodoServiceDependency
 from app.schema.common_schema import SuccessResponse
-from app.schema.todo_schema import TodoCreate, TodoResponse, TodoUpdate, TodoListParams
+from app.schema.todo_schema import TodoCreate, TodoListParams, TodoResponse, TodoUpdate
 from app.utils.responses import success_response
 
 router = APIRouter(prefix="/todos")
