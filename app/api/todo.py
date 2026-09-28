@@ -1,17 +1,16 @@
-
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from typing import Annotated
 
 from app.dependencies.security_dependency import CurrentUser
 from app.dependencies.todo_dependency import TodoServiceDependency
 from app.schema.common_schema import SuccessResponse
-from app.schema.todo_schema import TodoCreate, TodoResponse, TodoUpdate
+from app.schema.todo_schema import TodoCreate, TodoResponse, TodoUpdate, TodoListParams
 from app.utils.responses import success_response
 
-router = APIRouter(prefix='/todos')
+router = APIRouter(prefix="/todos")
 
 # 1. We have broken down our codebase into layers
 # 2. Every layer is independently testable
-
 
 
 # 1. Whenever we have external resources to use in any routes or functions
@@ -38,24 +37,35 @@ In this pattern, we break down the entire application into majorly 3 layers
 
 """
 
-@router.get('/', response_model=SuccessResponse[list[TodoResponse]])
-async def get_todos(service:TodoServiceDependency, current_user: CurrentUser ):
+
+@router.get("/", response_model=SuccessResponse[list[TodoResponse]])
+async def get_todos(
+    service: TodoServiceDependency,
+    current_user: CurrentUser,
+    filters: Annotated[TodoListParams, Query()],
+):
     # fetch all the todos:
     user_id = current_user.id
 
-    todos = await service.fetch_all_todos(user_id)
+    todos = await service.fetch_all_todos(user_id, filters)
     return success_response(data=todos, message="Todos fetched successfully")
 
-@router.post('/')
-async def create_todo(todo_in: TodoCreate, service: TodoServiceDependency, current_user: CurrentUser ):
+
+@router.post("/")
+async def create_todo(
+    todo_in: TodoCreate, service: TodoServiceDependency, current_user: CurrentUser
+):
     user_id = current_user.id
     created_todo = await service.create_todo(todo_in, user_id)
-    return {"message":f"Todo has been created with id {created_todo.id}"}
+    return {"message": f"Todo has been created with id {created_todo.id}"}
 
 
-@router.patch('/{todo_id}')
-async def update_todo(todo_id: int, todo_in: TodoUpdate,service: TodoServiceDependency):
+@router.patch("/{todo_id}")
+async def update_todo(
+    todo_id: int, todo_in: TodoUpdate, service: TodoServiceDependency
+):
     return await service.update_todo(todo_id, todo_in)
+
 
 # Fetch all todos
 # Delete all todos
